@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import { addRecipe, removeFromCalendar } from '../actions';
+// import { addRecipe, removeFromCalendar } from '../actions'; // vanilla redux removed 3.2
 import '../App.css';
 
 class App extends Component {
+
+/* Redux lesson 2 - build a vanilla redux setup from scratch
+	Removed in lesson 3; use react-redux Provider instead!
 	state = {
 		calendar: null
 	};
@@ -31,6 +34,7 @@ class App extends Component {
 		}));
 		this.input.value = '';
 	};
+*/
 
 	render() {
 		return (
