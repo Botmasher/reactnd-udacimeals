@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 // import { addRecipe, removeFromCalendar } from '../actions'; // vanilla redux removed 3.2
+import { connect } from 'react-redux';
+import { addRecipe, removeFromCalendar } from '../actions';
 import '../App.css';
 
 class App extends Component {
@@ -53,4 +55,40 @@ class App extends Component {
 	}
 }
 
-export default App;
+// react-redux getting updates from the store in lesson 3.4
+function mapStateToProps() {
+	const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+	
+	// recreate store calendar as an array to display in shape of a grid on the page
+	return {
+		calendar: dayOrder.map((day) => {
+			day,
+			meals: Object.keys(calendar[day]).reduce(meals, meal) => {
+				meals[meal] = calendar[day][meal]
+					? calendar[day][meal]
+					: null;
+			
+				return meals;
+			}, {});
+		}));
+	};
+}
+
+// optional "clean" action dispatch methods added in lesson 3.4
+function mapDispatchToProps(dispatch) {
+	return {
+		selectRecipe: (data) => dispatch(addRecipe(data)),
+		remove: (data) => dispatch(removeFromCalendar(data))
+	};
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
+
+/*
+	summary:
+		- connect() connects 2 things: the store and a component
+		- a container component connects store to your component, giving it slices of state via props
+		- currying is fundamental to understanding the connect method
+		- compare connect to subscribe for use and behavior
+		https://stackoverflow.com/questions/41963225/redux-subscribe-vs-mapstatetoprops/41963751#41963751
+ */
