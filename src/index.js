@@ -2,10 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './components/App';
-// import { createStore } from 'redux'; 	// vanilla redux added 2.4 removed 3.2
+import { createStore } from 'redux'; 		// vanilla redux added 2.4 removed 3.2
 import { Provider } from 'react-redux'; 	// react-redux store provision in 3.2
 import reducer from './reducers';
-import registerServiceWorker from './registerServiceWorker';
 
 const store = createStore(
 	reducer,
@@ -20,5 +19,3 @@ ReactDOM.render(
 	<Provider store={store}><App/></Provider>,
 	document.getElementById('root')
 );
-
-registerServiceWorker();

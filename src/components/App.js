@@ -48,7 +48,7 @@ class App extends Component {
 				/>
 				<button onClick={this.submitFood}>Submit</button>
 				<pre>
-					Monday's Breakfast: {this.state.calendar && this.state.calendar.monday.breakfast}
+					Breakfast for Monday: {this.props.calendar && this.props.calendar.monday && this.props.calendar.monday.breakfast}
 				</pre>
 			</div>
 		);
@@ -56,21 +56,22 @@ class App extends Component {
 }
 
 // react-redux getting updates from the store in lesson 3.4
-function mapStateToProps() {
+function mapStateToProps(calendar) {
 	const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 	
 	// recreate store calendar as an array to display in shape of a grid on the page
 	return {
-		calendar: dayOrder.map((day) => {
-			day,
-			meals: Object.keys(calendar[day]).reduce(meals, meal) => {
-				meals[meal] = calendar[day][meal]
-					? calendar[day][meal]
-					: null;
-			
-				return meals;
-			}, {});
-		}));
+		calendar: dayOrder.map((day) => (
+			{
+				day,
+				meals: Object.keys(calendar[day]).reduce((meals, meal) => {
+					meals[meal] = calendar[day][meal]
+						? calendar[day][meal]
+						: null
+					return meals
+				}, {})
+			}
+		)),
 	};
 }
 
