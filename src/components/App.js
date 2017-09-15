@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-// import { addRecipe, removeFromCalendar } from '../actions'; // vanilla redux removed 3.2
 import { connect } from 'react-redux';
-import { addRecipe, removeFromCalendar } from '../actions';
+import { addRecipe, removeFromCalendar } from '../actions'; 	// redux action creators
 import '../App.css';
 
 class App extends Component {
@@ -66,12 +65,11 @@ function mapStateToProps(calendar) {
 				day,
 				meals: Object.keys(calendar[day]).reduce((meals, meal) => {
 					meals[meal] = calendar[day][meal]
-						? calendar[day][meal]
+						? food[calendar[day][meal]] 	// updated 4.2 for combineReducers
 						: null
 					return meals
 				}, {})
-			}
-		)),
+			})),
 	};
 }
 

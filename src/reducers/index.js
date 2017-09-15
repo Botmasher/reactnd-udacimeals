@@ -2,6 +2,7 @@ import {
 	ADD_RECIPE,
 	REMOVE_FROM_CALENDAR
 } from '../actions';
+import { combineReducers } from 'redux';
 
 const initialCalendarState = {
   sunday: {
@@ -65,4 +66,20 @@ function calendar (state=initialCalendarState, action) {
 	}
 }
 
-export default calendar;
+// add separate reducer for food section of state in 4.2 for combineReducers
+// (separating store into { food, calendar } state pieces)
+function food (state={}, action) {
+  switch (action.type) {
+    case ADD_RECIPE:
+      const { recipe } = action;
+      return {
+        ...state,
+        [recipe.label]: recipe
+      };
+    default:
+      return state;
+  }
+}
+
+//export default calendar;  // removed in 4.2 for combineReducers
+export default combineReducers({food, calendar});   // takes obj with all reducers, in 4.2
