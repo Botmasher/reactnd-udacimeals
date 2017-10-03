@@ -1,10 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { addRecipe, removeFromCalendar } from '../actions'; 	// redux action creators
+import { capitalize } from '../utils/helper'; 					// added 4.4 for calendar grid
+import CalendarIcon from 'react-icons/lib/fa/calendar-plus-o'; 	// added 4.4 for calendar grid
+import ArrowRightIcon from 'react-icons/lib/fa/arrow-circle-right';		// added 4.4 for modal
+import Modal from 'react-modal'; 											// added 4.4 for modal
+import Loading from 'react-loading'; 									// added 4.4 for modal
+import { fetchRecipes } from '../utils/api'; 					// added 4.4 for modal
+import FoodList from './FoodList'; 										// added 4.4 for modal
+import ShoppingList from './ShoppingList'; 						// added 4.4 for modal
 import '../App.css';
 
 class App extends Component {
-
 /* Redux lesson 2 - build a vanilla redux setup from scratch
 	Removed in lesson 3; use react-redux Provider instead!
 	state = {
@@ -36,15 +43,152 @@ class App extends Component {
 		this.input.value = '';
 	};
 */
+	// 4.4 dealing with modal and API
+	state = {
+		foodModalOpen: false,
+		meal: null,
+		day: null,
+		food: null,
+		loadingFood: false,
+		ingredientsModalOpen: false
+	};
 
+	// 4.4 methods to handle modal, loading modal and storing food array from API
+	openFoodModal = ({ meal, day }) => {
+		this.setState(() => ({
+			foodModalOpen: true,
+			meal,
+			day
+		}));
+	};
+	closeFoodModal = () => {
+		this.setState(() => ({
+			foodModalOpen: false,
+			meal: null,
+			day: null,
+			food: null
+		}));
+	};
+	searchFood = (e) => {
+		if (!this.input.value) {
+			return;
+		}
+		e.preventDefault();
+		this.setState(() => ({loadingFood : true}));
+		fetchRecipes(this.input.value)
+		.then((food) => this.setState(() => ({
+			food, 		// 4.4 array; we will Redux store the spec food on selection
+			loadingFood: false
+		})));
+	};
+	openIngredientsModal = () => this.setState(() => ({ingredientsModalOpen: true}));
+	closeIngredientsModal = () => this.setState(() => ({ingredientsModalOpen: false}));
+	generateShoppingList = () => {
+		// get all meals and push them into a single array
+		return this.props.calendar.reduce((result, { meals }) => {
+			const { breakfast, lunch, dinner } = meals;
+			breakfast && result.push(breakfast);
+			lunch && result.push(lunch);
+			dinner && result.push(dinner);
+			return result;
+		}, [])
+		.reduce((ings, { ingredientLines }) => ings.concat(ingredientLines), []); 	// flatten the array
+	};
+
+	// mapped props and grid layout 4.4
 	render() {
+		const { foodModalOpen, loadingFood, food, ingredientsModalOpen } = this.state;
+		const {calendar, remove, selectRecipe } = this.props;
+		const mealOrder = ['breakfast', 'lunch', 'dinner'];
 		return (
-			<div>
-				<input type='text' ref={(input) => this.input=input} placeholder="Monday's Breakfast" />
-				<button onClick={this.submitFood}>Submit</button>
-				<pre>
-					Breakfast for Monday: {this.props.calendar && this.props.calendar.monday && this.props.calendar.monday.breakfast}
-				</pre>
+			<div className="container">
+				<div className="nav">
+					<h1 className="header">Udacimeals</h1>
+					<button
+						className="shopping-list"
+						onClick={this.openIngredientsModal}
+					>Shopping List
+					</button>
+				</div>
+				<ul className="meal-types">
+					{mealOrder.map(mealType => (
+						<li key={mealType} className="subheader">{capitalize(mealType)}</li>
+					))}
+				</ul>
+				<div className="calendar">
+					{/* create row header for each day */}
+					<div className="days">
+						{calendar.map(({ day }) => <h3 key={day} className="subheader">{capitalize(day)}</h3>)}
+					</div>
+					{/* map over calendar again to create list of meals for each day */}
+					<div className="icon-grid">
+						{calendar.map(({ day, meals }) => (
+							<ul key={day}>
+								{mealOrder.map((meal) => (
+									<li key={meal} className='meal'>
+										{meals[meal]
+											? <div className="food-item">
+												<img src={meals[meal].image} alt={meals[meal].label} />
+												<button onClick={() => remove({meal, day})}>Clear</button>
+											  </div>
+											: <button onClick={() => this.openFoodModal({meal, day})} className="icon-btn">
+												<CalendarIcon size={30} />
+											  </button>
+										}
+									</li>
+								))}
+							</ul>
+						))}
+					</div>
+				</div>
+					<Modal
+			      className='modal'
+			      overlayClassName='overlay'
+			      isOpen={foodModalOpen}
+			      onRequestClose={this.closeFoodModal}
+			      contentLabel='Modal'
+			    >
+			      <div>
+			        {loadingFood === true
+			          ? <Loading delay={200} type='spin' color='#222' className='loading' />
+			          : <div className='search-container'>
+			              <h3 className='subheader'>
+			                Find a meal for {capitalize(this.state.day)} {this.state.meal}.
+			              </h3>
+			              <div className='search'>
+			                <input
+			                  className='food-input'
+			                  type='text'
+			                  placeholder='Search Foods'
+			                  ref={(input) => this.input = input}
+			                />
+			                <button
+			                  className='icon-btn'
+			                  onClick={this.searchFood}>
+			                    <ArrowRightIcon size={30}/>
+			                </button>
+			              </div>
+			              {food !== null && (
+			                <FoodList
+			                  food={food}
+			                  onSelect={(recipe) => {
+			                    selectRecipe({ recipe, day: this.state.day, meal: this.state.meal })
+			                    this.closeFoodModal()
+			                  }}
+			                />)}
+			            </div>}
+			      </div>
+			    </Modal>
+
+			    <Modal
+			      className='modal'
+			      overlayClassName='overlay'
+			      isOpen={ingredientsModalOpen}
+			      onRequestClose={this.closeIngredientsModal}
+			      contentLabel='Modal'
+			    >
+			      {ingredientsModalOpen && <ShoppingList list={this.generateShoppingList()}/>}
+			    </Modal>
 			</div>
 		);
 	}
